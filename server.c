@@ -5,6 +5,10 @@
 #include <arpa/inet.h>
 #include <alsa/asoundlib.h>
 #include <wiringPi.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 #define PCM_DEVICE "default"
 
