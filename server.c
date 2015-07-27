@@ -293,7 +293,17 @@ int main(int argc, const char* argv[])
 	serv_addr.sin_port = htons(7654);
 	serv_addr.sin_family = AF_INET;
 
-	inet_pton(AF_INET, "192.168.1.11", &serv_addr.sin_addr.s_addr);
+	int s;
+	struct ifreq ifr = {};
+
+	s = socket(PF_INET, SOCK_DGRAM, 0);
+
+	strncpy(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name));
+
+	if (ioctl(s, SIOCGIFADDR, &ifr) >= 0)
+		inet_pton(AF_INET, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), &serv_addr.sin_addr.s_addr);
+	else
+		inet_pton(AF_INET, "192.168.1.9", &serv_addr.sin_addr.s_addr);
 
 	/* SERVER DE MUZICA */
 
