@@ -261,11 +261,19 @@ void set_leds(int row, int col)
 	for (i = 0; i < row; i++) {
 		digitalWrite(rows[i], HIGH);
 	}
-	delay(5);
-	for (i = 0; i < row; i++) {
+}
+
+void clear_leds()
+{
+	int i;
+	for(i = 0; i < 5; i++)
+	{
 		digitalWrite(rows[i], LOW);
 	}
-	digitalWrite(col, LOW);
+	for(i = 0; i < 12; i++)
+	{
+		digitalWrite(cols[i], LOW);
+	}
 }
 
 int rate = 44100;
@@ -282,7 +290,7 @@ int main(int argc, const char* argv[])
 	int len = sizeof(client_addr);
 	int received;
 
-	serv_addr.sin_port = htons(7567);
+	serv_addr.sin_port = htons(7654);
 	serv_addr.sin_family = AF_INET;
 
 	inet_pton(AF_INET, "192.168.1.11", &serv_addr.sin_addr.s_addr);
@@ -434,9 +442,9 @@ int main(int argc, const char* argv[])
 			for (i = 0; i < 12; i++) {
 				levels[i] /= max;
 				levels[i] *= 5;
-
+				
 				int lvl = (int) levels[i]; /*NOT FUCKING WORKING */
-
+				clear_leds();
 				set_leds(lvl, i); // row, col
 				//
 				printf("%f\n", levels[i]);
