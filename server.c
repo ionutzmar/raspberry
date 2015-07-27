@@ -257,7 +257,7 @@ void init_leds()
 void set_leds(int row, int col)
 {
 	int i;
-	digitalWrite(col, HIGH);
+	digitalWrite(cols[col], HIGH);
 	for (i = 0; i < row; i++) {
 		digitalWrite(rows[i], HIGH);
 	}
@@ -447,7 +447,7 @@ int main(int argc, const char* argv[])
 				clear_leds();
 				set_leds(lvl, i); // row, col
 				//
-				printf("%f\n", levels[i]);
+				printf("Column: %d, Level: %d\n", i, lvl);
 			}
 		}
 	}
