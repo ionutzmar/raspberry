@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <alsa/asoundlib.h>
-#include <WiringPi.h>
+#include <wiringPi.h>
 
 #define PCM_DEVICE "default"
 
@@ -249,7 +249,7 @@ void init_leds()
 	for (i = 0; i < 5; i++) {
 		pinMode(rows[i], OUTPUT);
 	}
-	for (i = 0 : i < 12; i++) {
+	for (i = 0; i < 12; i++) {
 		pinMode(cols[i], OUTPUT);
 	}
 }
@@ -404,7 +404,7 @@ int main(int argc, const char* argv[])
 
 		if (received > 0) {
 			// if (received == frames / 4)
-			printf("Received: %d\n", received);
+			//printf("Received: %d\n", received);
 			if ((err = snd_pcm_writei (playback_handle, buffer, frames)) <= 0) {
 				fprintf (stderr, "write to audio interface failed (%s)\n", snd_strerror (err));
 			}
@@ -437,7 +437,7 @@ int main(int argc, const char* argv[])
 
 				int lvl = (int) levels[i]; /*NOT FUCKING WORKING */
 
-				set_leds(4, 4); // row, col
+				set_leds(lvl, i); // row, col
 				//
 				printf("%f\n", levels[i]);
 			}
