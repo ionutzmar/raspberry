@@ -424,7 +424,7 @@ int main(int argc, const char* argv[])
 	while (1) {
 		received = read(client_fd, buffer, buff_size);
 
-		if (received > 0) {
+		if (received > 32) {
 			// if (received == frames / 4)
 			//printf("Received: %d\n", received);
 			if ((err = snd_pcm_writei (playback_handle, buffer, frames)) <= 0) {
@@ -463,6 +463,10 @@ int main(int argc, const char* argv[])
 				//
 				printf("Column: %d, Level: %d\n", i, lvl);
 			}
+		}
+		else
+		{
+			clear_leds();
 		}
 	}
 
