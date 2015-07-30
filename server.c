@@ -12,7 +12,6 @@
 
 #define PCM_DEVICE "default"
 
-/////////////////////////////////////
 
 int cols[12] = {23, 22, 21, 29, 28, 27, 26, 1, 4, 5, 6, 7};
 int rows[5] = {0, 2, 3, 25, 24};
@@ -236,14 +235,6 @@ x[15] = (0.00 + j 0.00)
 
 */
 
-
-
-
-
-
-
-
-
 /////////////////////////////////////
 
 
@@ -430,11 +421,7 @@ int main(int argc, const char* argv[])
 
 			if ((err = snd_pcm_writei(playback_handle, buffer, frames)) <= 0) {
 				fprintf(stderr, "write to audio interface failed (%s)\n", snd_strerror(err));
-				if (err == -EAGAIN)
-				{
-					xrun_recovery(playback_handle);
-				}
-				if (err == -EPIPE)
+				if (err == -EPIPE || err == -EAGAIN)
 				{
 					snd_pcm_prepare(playback_handle);
 				}
