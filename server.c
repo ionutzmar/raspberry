@@ -424,7 +424,7 @@ int main(int argc, const char* argv[])
 	while (1) {
 		received = read(client_fd, buffer, buff_size);
 
-		if (received > 32) {
+		if (received > 0) {
 			// if (received == frames / 4)
 			//printf("Received: %d\n", received);
 			if ((err = snd_pcm_writei (playback_handle, buffer, frames)) <= 0) {
@@ -466,6 +466,8 @@ int main(int argc, const char* argv[])
 		}
 		else
 		{
+			if (err = snd_pcm_drain(playback_handle) < 0)
+				fprintf(stdout, "Could not stop pcm")
 			clear_leds();
 		}
 	}
