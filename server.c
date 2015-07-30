@@ -467,7 +467,7 @@ int main(int argc, const char* argv[])
 		else
 		{
 			if (err = snd_pcm_drain(playback_handle) < 0)
-				fprintf(stdout, "Could not stop pcm")
+				fprintf(stdout, "Could not stop pcm");
 			clear_leds();
 		}
 	}
