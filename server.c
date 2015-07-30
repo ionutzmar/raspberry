@@ -427,11 +427,12 @@ int main(int argc, const char* argv[])
 		if (received > 0) {
 			// if (received == frames / 4)
 			//printf("Received: %d\n", received);
-			if (frames == -EPIPE) {
-				snd_pcm_prepare(pcm.handle);
-				if ((err = snd_pcm_writei(playback_handle, buffer, frames)) <= 0) {
-					fprintf(stderr, "write to audio interface failed (%s)\n", snd_strerror(err));
-				}
+			if (frames == -EPIPE) 
+			{
+				snd_pcm_prepare(playback_handle);
+			}
+			if ((err = snd_pcm_writei(playback_handle, buffer, frames)) <= 0) {
+				fprintf(stderr, "write to audio interface failed (%s)\n", snd_strerror(err));
 			}
 
 			
