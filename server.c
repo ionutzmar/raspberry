@@ -444,10 +444,11 @@ int main(int argc, const char* argv[])
 			for (i = 0; i < 12; i++) {
 				int j;
 				int start = i * (received / 4 / 12);
+				levels[i] = 0;
 				for (j = start; j < start + (received / 4/ 12); j++) {
-					levels[i] += sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
+					if (levels[i] < sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]))
+						levels[i] = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
 				}
-				levels[i] = levels[i] / 12
 				if (levels[i] > max)
 					max = levels[i];
 			}
