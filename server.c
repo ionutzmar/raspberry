@@ -13,8 +13,8 @@
 #define PCM_DEVICE "default"
 
 
-int cols[12] = {23, 22, 21, 29, 28, 27, 26, 1, 4, 5, 6, 7};
-int rows[5] = {0, 2, 3, 25, 24};
+int cols[12] = { 23, 22, 21, 29, 28, 27, 26, 1, 4, 5, 6, 7 };
+int rows[5] = { 0, 2, 3, 25, 24 };
 
 
 /************************************************
@@ -30,70 +30,68 @@ int rows[5] = {0, 2, 3, 25, 24};
 #define TWOPI	(2.0*PI)
 
 /*
- FFT/IFFT routine. (see pages 507-508 of Numerical Recipes in C)
-
- Inputs:
-	data[] : array of complex* data points of size 2*NFFT+1.
-		data[0] is unused,
-		* the n'th complex number x(n), for 0 <= n <= length(x)-1, is stored as:
-			data[2*n+1] = real(x(n))
-			data[2*n+2] = imag(x(n))
-		if length(Nx) < NFFT, the remainder of the array must be padded with zeros
-
-	nn : FFT order NFFT. This MUST be a power of 2 and >= length(x).
-	isign:  if set to 1, 
-				computes the forward FFT
-			if set to -1, 
-				computes Inverse FFT - in this case the output values have
-				to be manually normalized by multiplying with 1/NFFT.
- Outputs:
-	data[] : The FFT or IFFT results are stored in data, overwriting the input.
+FFT/IFFT routine. (see pages 507-508 of Numerical Recipes in C)
+Inputs:
+data[] : array of complex* data points of size 2*NFFT+1.
+data[0] is unused,
+* the n'th complex number x(n), for 0 <= n <= length(x)-1, is stored as:
+data[2*n+1] = real(x(n))
+data[2*n+2] = imag(x(n))
+if length(Nx) < NFFT, the remainder of the array must be padded with zeros
+nn : FFT order NFFT. This MUST be a power of 2 and >= length(x).
+isign:  if set to 1,
+computes the forward FFT
+if set to -1,
+computes Inverse FFT - in this case the output values have
+to be manually normalized by multiplying with 1/NFFT.
+Outputs:
+data[] : The FFT or IFFT results are stored in data, overwriting the input.
 */
 
 void four1(double data[], int nn, int isign)
 {
-    int n, mmax, m, j, istep, i;
-    double wtemp, wr, wpr, wpi, wi, theta;
-    double tempr, tempi;
-    
-    n = nn << 1;
-    j = 1;
-    for (i = 1; i < n; i += 2) {
-	if (j > i) {
-	    tempr = data[j];     data[j] = data[i];     data[i] = tempr;
-	    tempr = data[j+1]; data[j+1] = data[i+1]; data[i+1] = tempr;
+	int n, mmax, m, j, istep, i;
+	double wtemp, wr, wpr, wpi, wi, theta;
+	double tempr, tempi;
+
+	n = nn << 1;
+	j = 1;
+	for (i = 1; i < n; i += 2) {
+		if (j > i) {
+			tempr = data[j];     data[j] = data[i];     data[i] = tempr;
+			tempr = data[j + 1]; data[j + 1] = data[i + 1]; data[i + 1] = tempr;
+		}
+		m = n >> 1;
+		while (m >= 2 && j > m) {
+			j -= m;
+			m >>= 1;
+		}
+		j += m;
 	}
-	m = n >> 1;
-	while (m >= 2 && j > m) {
-	    j -= m;
-	    m >>= 1;
+	mmax = 2;
+	while (n > mmax) {
+		istep = 2 * mmax;
+		theta = TWOPI / (isign*mmax);
+		wtemp = sin(0.5*theta);
+		wpr = -2.0*wtemp*wtemp;
+		wpi = sin(theta);
+		wr = 1.0;
+		wi = 0.0;
+		for (m = 1; m < mmax; m += 2) {
+			for (i = m; i <= n; i += istep) {
+				j = i + mmax;
+				tempr = wr*data[j] - wi*data[j + 1];
+				tempi = wr*data[j + 1] + wi*data[j];
+				data[j] = data[i] - tempr;
+				data[j + 1] = data[i + 1] - tempi;
+				data[i] += tempr;
+				data[i + 1] += tempi;
+			}
+			wr = (wtemp = wr)*wpr - wi*wpi + wr;
+			wi = wi*wpr + wtemp*wpi + wi;
+		}
+		mmax = istep;
 	}
-	j += m;
-    }
-    mmax = 2;
-    while (n > mmax) {
-	istep = 2*mmax;
-	theta = TWOPI/(isign*mmax);
-	wtemp = sin(0.5*theta);
-	wpr = -2.0*wtemp*wtemp;
-	wpi = sin(theta);
-	wr = 1.0;
-	wi = 0.0;
-	for (m = 1; m < mmax; m += 2) {
-	    for (i = m; i <= n; i += istep) {
-		j =i + mmax;
-		tempr = wr*data[j]   - wi*data[j+1];
-		tempi = wr*data[j+1] + wi*data[j];
-		data[j]   = data[i]   - tempr;
-		data[j+1] = data[i+1] - tempi;
-		data[i] += tempr;
-		data[i+1] += tempi;
-	    }
-	    wr = (wtemp = wr)*wpr - wi*wpi + wr;
-	    wi = wi*wpr + wtemp*wpi + wi;
-	}
-	mmax = istep;
-    }
 }
 
 /********************************************************
@@ -175,10 +173,8 @@ void four1(double data[], int nn, int isign)
 // }
 
 /*
-
 Nx = 10
 NFFT = 16
-
 Input complex sequence (padded to next highest power of 2):
 x[0] = (0.00 + j 0.00)
 x[1] = (1.00 + j 0.00)
@@ -196,7 +192,6 @@ x[12] = (0.00 + j 0.00)
 x[13] = (0.00 + j 0.00)
 x[14] = (0.00 + j 0.00)
 x[15] = (0.00 + j 0.00)
-
 FFT:
 X[0] = (45.00 + j 0.00)
 X[1] = (-25.45 + j 16.67)
@@ -214,7 +209,6 @@ X[12] = (4.00 + j -5.00)
 X[13] = (-9.06 + j 2.33)
 X[14] = (10.36 + j 3.29)
 X[15] = (-25.45 + j -16.67)
-
 Complex sequence reconstructed by IFFT:
 x[0] = (0.00 + j -0.00)
 x[1] = (1.00 + j -0.00)
@@ -232,7 +226,6 @@ x[12] = (0.00 + j 0.00)
 x[13] = (-0.00 + j -0.00)
 x[14] = (0.00 + j 0.00)
 x[15] = (0.00 + j 0.00)
-
 */
 
 /////////////////////////////////////
@@ -261,11 +254,11 @@ void set_leds(int row, int col)
 void clear_leds()
 {
 	int i;
-	for(i = 0; i < 5; i++)
+	for (i = 0; i < 5; i++)
 	{
 		digitalWrite(rows[i], LOW);
 	}
-	for(i = 0; i < 12; i++)
+	for (i = 0; i < 12; i++)
 	{
 		digitalWrite(cols[i], LOW);
 	}
@@ -309,49 +302,49 @@ int main(int argc, const char* argv[])
 	snd_pcm_hw_params_t *hw_params;
 
 
-	if ((err = snd_pcm_open (&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-		fprintf (stderr, "cannot open audio device %s (%s)\n", 
-			 argv[1],
-			 snd_strerror (err));
-		exit (1);
-	}
-	   
-	if ((err = snd_pcm_hw_params_malloc (&hw_params)) < 0) {
-		fprintf (stderr, "cannot allocate hardware parameter structure (%s)\n",
-			 snd_strerror (err));
-		exit (1);
-	}
-			 
-	if ((err = snd_pcm_hw_params_any (playback_handle, hw_params)) < 0) {
-		fprintf (stderr, "cannot initialize hardware parameter structure (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_open(&playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+		fprintf(stderr, "cannot open audio device %s (%s)\n",
+			argv[1],
+			snd_strerror(err));
+		exit(1);
 	}
 
-	if ((err = snd_pcm_hw_params_set_access (playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-		fprintf (stderr, "cannot set access type (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
+		fprintf(stderr, "cannot allocate hardware parameter structure (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
-	if ((err = snd_pcm_hw_params_set_format (playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
-		fprintf (stderr, "cannot set sample format (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_hw_params_any(playback_handle, hw_params)) < 0) {
+		fprintf(stderr, "cannot initialize hardware parameter structure (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
-	if ((err = snd_pcm_hw_params_set_rate_near (playback_handle, hw_params, &rate, 0)) < 0) {
-		fprintf (stderr, "cannot set sample rate (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_hw_params_set_access(playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+		fprintf(stderr, "cannot set access type (%s)\n",
+			snd_strerror(err));
+		exit(1);
+	}
+
+	if ((err = snd_pcm_hw_params_set_format(playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
+		fprintf(stderr, "cannot set sample format (%s)\n",
+			snd_strerror(err));
+		exit(1);
+	}
+
+	if ((err = snd_pcm_hw_params_set_rate_near(playback_handle, hw_params, &rate, 0)) < 0) {
+		fprintf(stderr, "cannot set sample rate (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
 	int channel = 2;
 
-	if ((err = snd_pcm_hw_params_set_channels (playback_handle, hw_params, channel)) < 0) {
-		fprintf (stderr, "cannot set channel count (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_hw_params_set_channels(playback_handle, hw_params, channel)) < 0) {
+		fprintf(stderr, "cannot set channel count (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
 	snd_pcm_uframes_t frames;
@@ -359,40 +352,40 @@ int main(int argc, const char* argv[])
 	int dir;
 	// snd_pcm_hw_params_set_period_size_near(playback_handle, hw_params, &frames, &dir);
 
-	if ((err = snd_pcm_hw_params (playback_handle, hw_params)) < 0) {
-		fprintf (stderr, "cannot set parameters (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	if ((err = snd_pcm_hw_params(playback_handle, hw_params)) < 0) {
+		fprintf(stderr, "cannot set parameters (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
 	snd_pcm_hw_params_get_period_size(hw_params, &frames, &dir);
 	int buff_size = frames * 2 * channel; // size of buffer (1 period) in bytes
-	char *buffer = (char *) malloc (buff_size);
+	char *buffer = (char *)malloc(buff_size);
 
 	// printf("%dn", frames);
-	
-	snd_pcm_hw_params_free (hw_params);
 
-	if ((err = snd_pcm_prepare (playback_handle)) < 0) {
-		fprintf (stderr, "cannot prepare audio interface for use (%s)\n",
-			 snd_strerror (err));
-		exit (1);
+	snd_pcm_hw_params_free(hw_params);
+
+	if ((err = snd_pcm_prepare(playback_handle)) < 0) {
+		fprintf(stderr, "cannot prepare audio interface for use (%s)\n",
+			snd_strerror(err));
+		exit(1);
 	}
 
 	/* END OF SERVER DE MUZICA */
 
 	sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if(sock_fd < 0) {
+	if (sock_fd < 0) {
 		fprintf(stdout, "Cannot open socket.\n");
 		return -1;
 	}
-	
+
 	err = bind(sock_fd, (struct sockaddr*) &serv_addr, sizeof(serv_addr));
 	if (err < 0) {
 		fprintf(stdout, "Cannot bind socket to address.\n");
 		return -1;
 	}
-	
+
 	err = listen(sock_fd, 10);
 	if (err < 0) {
 		fprintf(stdout, "Cannot listen.\n");
@@ -409,9 +402,8 @@ int main(int argc, const char* argv[])
 	}
 
 	printf("New client connected!\n");
-	double *samples = (double *) malloc ((2 * frames + 1) * sizeof(double));
+	double *samples = (double *)malloc((2 * frames + 1) * sizeof(double));
 	float levels[12];
-	float max = 0;
 
 	while (1) {
 		received = read(client_fd, buffer, buff_size);
@@ -428,7 +420,7 @@ int main(int argc, const char* argv[])
 				}
 			}
 
-			
+
 			// printf("Play\n");
 
 			/* create input vector for fft */
@@ -439,16 +431,15 @@ int main(int argc, const char* argv[])
 			}
 
 			four1(samples, received / 4, 1);
-			
+			float max = 0;
 
 			for (i = 0; i < 12; i++) {
 				int j;
 				int start = i * (received / 4 / 12);
-				levels[i] = 0;
-				for (j = start; j < start + (received / 4/ 12); j++) {
-					if (levels[i] < sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]))
-						levels[i] = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
+				for (j = start; j < start + (received / 4 / 12); j++) {
+					levels[i] = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
 				}
+				// levels[i] /= frames / 12;
 				if (levels[i] > max)
 					max = levels[i];
 			}
@@ -456,8 +447,8 @@ int main(int argc, const char* argv[])
 			for (i = 0; i < 12; i++) {
 				levels[i] /= max;
 				levels[i] *= 5;
-				
-				int lvl = (int) levels[i]; /*NOT FUCKING WORKING */
+
+				int lvl = (int)levels[i]; /*NOT FUCKING WORKING */
 				clear_leds();
 				set_leds(lvl, i); // row, col
 				//
@@ -470,7 +461,7 @@ int main(int argc, const char* argv[])
 		}
 	}
 
-	snd_pcm_close (playback_handle);
+	snd_pcm_close(playback_handle);
 	return 0;
 }
 
