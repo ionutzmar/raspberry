@@ -245,7 +245,11 @@ void init_leds()
 void set_leds(int row, int col)
 {
 	int i;
-	digitalWrite(cols[col], HIGH);
+	if (row > 5)
+		row = 4;
+	if (col > 11)
+		col = 11;
+		digitalWrite(cols[col], HIGH);
 	for (i = 0; i < row; i++) {
 		digitalWrite(rows[i], HIGH);
 	}
@@ -432,32 +436,44 @@ int main(int argc, const char* argv[])
 			}
 
 			four1(samples, received / 4, 1);
-			
+
 
 			for (i = 0; i < 12; i++) {
 				int j;
-				int start = i * (received / 4 / 12);
-				levels[i] = 0;
-				for (j = start; j < start + (received / 4 / 12); j++) {
+
+				int N = received / 4;
+				
+				float peak = 0;
+				int p1 = (int)pow(2, i *  8/ (float)(12 - 1));  //8 is log2 from received / 4
+				if (p1 > N - 1)
+					p1 = N - 1;
+				if (p1 <= 0) 
+					p1 = 1;
+
+				int p0 = (int)pow(2, (i - 1) * 8 / (float)(12 - 1));
+				if (p0 > N - 1) 
+					p0 = N - 1;
+				if (p0 < 0) p0 = 0;
+
+				for (j = p0; j < p1; j++)
+				{
 					float mag = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
-					if (levels[i] < mag)
-						levels[i] = mag;
+					if (peak < mag) 
+						peak = mag;
 				}
-
-				if (levels[i] > max)
-					max = levels[i];
-			}
-
-			for (i = 0; i < 12; i++) {
-				levels[i] /= max;
-				levels[i] *= 5;
+		
+				levels[i] = sqrt(peak);
+				printf("Peak: %f", peak);
+				levels[i] *= 10;
 
 				int lvl = (int)levels[i];
 				clear_leds();
 				set_leds(lvl, i); // row, col
 				//
 				printf("Column: %d, Level: %d\n", i, lvl);
+
 			}
+
 		}
 		else
 		{
