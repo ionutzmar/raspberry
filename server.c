@@ -445,9 +445,9 @@ int main(int argc, const char* argv[])
 				int j;
 				int start = i * (received / 4 / 12);
 				for (j = start; j < start + (received / 4/ 12); j++) {
-					levels[i] = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
+					levels[i] += sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
 				}
-				// levels[i] /= frames / 12;
+				levels[i] = levels[i] / 12
 				if (levels[i] > max)
 					max = levels[i];
 			}
