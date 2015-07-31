@@ -404,6 +404,7 @@ int main(int argc, const char* argv[])
 	printf("New client connected!\n");
 	double *samples = (double *)malloc((2 * frames + 1) * sizeof(double));
 	float levels[12];
+	float max = 0;
 
 	while (1) {
 		received = read(client_fd, buffer, buff_size);
@@ -431,15 +432,18 @@ int main(int argc, const char* argv[])
 			}
 
 			four1(samples, received / 4, 1);
-			float max = 0;
+			
 
 			for (i = 0; i < 12; i++) {
 				int j;
 				int start = i * (received / 4 / 12);
+				levels[i] = 0;
 				for (j = start; j < start + (received / 4 / 12); j++) {
-					levels[i] = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
+					float mag = sqrt(samples[2 * j + 1] * samples[2 * j + 1] + samples[2 * j + 2] * samples[2 * j + 2]);
+					if (levels[i] < mag)
+						levels[i] = mag;
 				}
-				// levels[i] /= frames / 12;
+
 				if (levels[i] > max)
 					max = levels[i];
 			}
@@ -448,7 +452,7 @@ int main(int argc, const char* argv[])
 				levels[i] /= max;
 				levels[i] *= 5;
 
-				int lvl = (int)levels[i]; /*NOT FUCKING WORKING */
+				int lvl = (int)levels[i];
 				clear_leds();
 				set_leds(lvl, i); // row, col
 				//
