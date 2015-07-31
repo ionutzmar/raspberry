@@ -411,6 +411,7 @@ int main(int argc, const char* argv[])
 	printf("New client connected!\n");
 	double *samples = (double *) malloc ((2 * frames + 1) * sizeof(double));
 	float levels[12];
+	float max = 0;
 
 	while (1) {
 		received = read(client_fd, buffer, buff_size);
@@ -438,7 +439,7 @@ int main(int argc, const char* argv[])
 			}
 
 			four1(samples, received / 4, 1);
-			float max = 0;
+			
 
 			for (i = 0; i < 12; i++) {
 				int j;
